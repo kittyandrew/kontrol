@@ -4,14 +4,14 @@ The layer no automated check reaches: the radio and a real router, and the flash
 silicon. Run it after a firmware change whenever the board is at hand, and report which steps ran. Step
 labels follow `003-vocabulary.md`.
 
-`$port` is `/dev/serial/by-id/usb-Embassy_USB-serial_logger-if00`; `$KONTROL_SERVER` and
-`$KONTROL_COMMAND_TOPIC` are the settings file's values. A wake is posted with the phone's token: define
-`phone_token` to print it from wherever the consuming config seals it. The token goes through a pipe, never
-into the transcript or a process list:
+`$port` is `/dev/serial/by-id/usb-Embassy_USB-serial_logger-if00`; `$KONTROL_SERVER` and `$KONTROL_TOPIC`
+are the settings file's values. A wake is posted with the phone's token: define `phone_token` to print it
+from wherever the consuming config seals it. The token goes through a pipe, never into the transcript or a
+process list:
 
 ```bash
 wake() { # extra curl arguments, e.g. -H 'Delay: 60s'
-  printf 'Authorization: Bearer %s\n' "$(phone_token)" | curl -sSf -H @- "$@" -d wake "$KONTROL_SERVER/$KONTROL_COMMAND_TOPIC"
+  printf 'Authorization: Bearer %s\n' "$(phone_token)" | curl -sSf -H @- "$@" -d wake "$KONTROL_SERVER/$KONTROL_TOPIC-commands"
 }
 ```
 

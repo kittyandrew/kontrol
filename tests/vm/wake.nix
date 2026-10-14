@@ -12,8 +12,7 @@
   mac = "52:54:00:aa:bb:cc"; # the sleeping PC's; its stand-in counts only packets carrying it
   picoToken = "tk_picotestpicotestpicotest00000"; # ntfy wants tk_ and 29 more
   phoneToken = "tk_phonetestphonetestphonetest00";
-  topic = "commands";
-  statusTopic = "status";
+  topic = "pc"; # commands go to pc-commands, as the firmware derives
 
   # Caddy sends a chain over 4 KiB, as a real one can be, so the firmware needs app.rs's full-record TLS_RX:
   # three RSA 4096 intermediates over an ECDSA leaf. The leaf signs the handshake, and embedded-tls offers no
@@ -85,10 +84,10 @@ in
               "phone:$2a$10$jH.5EqKZ30ZXuHwl70ALoeklcmcwASJ71n3821OSpZkb8TvoYMVzC:user"
             ];
             auth-access = [
-              "pico:${topic}:ro"
-              "pico:${statusTopic}:wo"
-              "phone:${topic}:wo"
-              "phone:${statusTopic}:ro"
+              "pico:${topic}-commands:ro"
+              "pico:${topic}:wo"
+              "phone:${topic}-commands:wo"
+              "phone:${topic}:ro"
             ];
             auth-tokens = ["pico:${picoToken}" "phone:${phoneToken}"];
           };
@@ -133,8 +132,7 @@ in
               pass=unused
               token=${picoToken}
               server=https://ntfy.test
-              command=${topic}
-              status=${statusTopic}
+              topic=${topic}
               mac=${mac}
             '';
           };
@@ -181,7 +179,7 @@ in
 
 
       def publish(message):
-          return json.loads(ntfy(f"-d {message} https://ntfy.test/${topic}"))["id"]
+          return json.loads(ntfy(f"-d {message} https://ntfy.test/${topic}-commands"))["id"]
 
 
       def wakes():
@@ -210,7 +208,7 @@ in
           pc.wait_until_succeeds("grep -q '^ok' /tmp/wol.log", timeout=10)
           server.wait_until_succeeds(
               f"curl -sf --cacert {ca} --resolve ntfy.test:443:127.0.0.1 -H 'Authorization: Bearer ${phoneToken}'"
-              " 'https://ntfy.test/${statusTopic}/json?poll=1' | grep -q 'Pico sent the wake packet'",
+              " 'https://ntfy.test/${topic}/json?poll=1' | grep -q 'Pico sent the wake packet'",
               timeout=30,
           )
 

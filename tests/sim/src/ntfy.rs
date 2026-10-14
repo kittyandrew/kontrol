@@ -24,11 +24,11 @@ pub enum Mode {
 
 pub struct Ntfy {
     pub token: &'static str,
-    pub messages: Vec<(String, u64, String)>, // (id, unix seconds, message) on the command topic
-    pub statuses: Vec<(u64, String)>,         // (ms, body) posted to the status topic
+    pub messages: Vec<(String, u64, String)>, // (id, unix seconds, message) on pc-commands
+    pub statuses: Vec<(u64, String)>,         // (ms, body) posted to pc, the status topic
     pub subscriptions: u32,
     pub mode: Mode,
-    pub status_hangs: bool,  // a POST to the status topic is read and never answered
+    pub status_hangs: bool,  // a POST to pc is read and never answered
     pub split_lines: bool,   // each message reaches the app in two pieces, as TCP may deliver it
     pub keepalive: Duration, // ntfy's keepalive-interval, at its default
     generation: u32,         // bumped by `restart`: every open stream closes, as when the proxy restarts
@@ -75,7 +75,7 @@ impl Ntfy {
 
 fn event(id: &str, time: u64, kind: &str, message: Option<&str>) -> String {
     let message = message.map(|m| format!(r#","message":"{m}""#)).unwrap_or_default();
-    format!(r#"{{"id":"{id}","time":{time},"event":"{kind}","topic":"commands"{message}}}"#) + "\n"
+    format!(r#"{{"id":"{id}","time":{time},"event":"{kind}","topic":"pc-commands"{message}}}"#) + "\n"
 }
 
 /// The proxy's listening sockets: several, so a new connection is served while an old one lingers.
@@ -141,7 +141,7 @@ async fn handle(socket: &mut TcpSocket<'_>, ntfy: &Shared) -> Result<(), embassy
         Some(_) => {}
     }
 
-    if request_line.starts_with("POST /status ") {
+    if request_line.starts_with("POST /pc ") {
         let length: usize = head
             .lines()
             .find_map(|l| l.to_ascii_lowercase().strip_prefix("content-length: ").map(|v| v.trim().parse().unwrap_or(0)))
@@ -164,7 +164,7 @@ async fn handle(socket: &mut TcpSocket<'_>, ntfy: &Shared) -> Result<(), embassy
         return socket.write_all(b"HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 2\r\n\r\n{}").await;
     }
 
-    let Some(query) = request_line.strip_prefix("GET /commands/json").and_then(|r| r.strip_suffix(" HTTP/1.1")) else {
+    let Some(query) = request_line.strip_prefix("GET /pc-commands/json").and_then(|r| r.strip_suffix(" HTTP/1.1")) else {
         return socket.write_all(b"HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n").await;
     };
     // ntfy's `since=<n><s|m|h>`: replay what arrived in that window. Without it, only new messages.

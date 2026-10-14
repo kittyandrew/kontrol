@@ -26,14 +26,16 @@ board-specific out of `app.rs`.
 
 ## The config sector contract
 
-kontrol-flash (`nix/flash.nix`) writes `key=value` lines for ssid, pass, token, server, command, status and
-mac to the last flash sector, and `app::Config::parse` reads them on both builds. Three places hold the
-address and must agree: `CONFIG_ADDR` in `src/pico.rs`, the FLASH length in `memory.x`, and the `-o` in
-kontrol-flash. picotool zero-fills the rest of the sector, so `read_config` stops at the first zero byte.
+kontrol-flash (`nix/flash.nix`) writes `key=value` lines for ssid, pass, token, server, topic and mac to the
+last flash sector, and `app::Config::parse` reads them on both builds. Commands use `<topic>-commands`, a
+name that `Config::parse` and `nix/module.nix` each derive: a change to the suffix touches both. Three
+places hold the address and must agree: `CONFIG_ADDR` in `src/pico.rs`, the FLASH length in `memory.x`, and
+the `-o` in kontrol-flash. picotool zero-fills the rest of the sector, so `read_config` stops at the first
+zero byte.
 
 ## NixOS module (`nix/module.nix`)
 
-- `kontrol-listen` announces "<host> is up", then `exec`s `ntfy subscribe`, which runs `kontrol-handle` once
+- `kontrol-listen` announces `<host> is up`, then `exec`s `ntfy subscribe`, which runs `kontrol-handle` once
   per message.
 - `kontrol-handle` drops anything older than 120 s, reports before acting (suspend and poweroff take the
   network with them), and calls `ntfy publish` under `env -i`: ntfy exports NTFY_TOPIC to the handler, and

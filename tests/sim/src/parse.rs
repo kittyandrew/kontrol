@@ -8,7 +8,8 @@ mod clock; // app.rs reads the clock elsewhere, so the binary needs a time drive
 
 use app::Config;
 
-const VALID: &str = "ssid=home\npass=secret\ntoken=tk_abcdefghijklmnopqrstuvwxyz012\nserver=https://ntfy.example\ncommand=commands\nstatus=status\nmac=aa:bb:cc:dd:ee:ff";
+const VALID: &str =
+    "ssid=home\npass=secret\ntoken=tk_abcdefghijklmnopqrstuvwxyz012\nserver=https://ntfy.example\ntopic=pc\nmac=aa:bb:cc:dd:ee:ff";
 
 /// VALID with `key`'s line replaced by `line`, or dropped when `line` is empty.
 fn with(key: &str, line: &str) -> &'static str {
@@ -25,7 +26,7 @@ fn a_valid_config_parses() {
 
 #[test]
 fn each_missing_key_is_rejected() {
-    for key in ["ssid", "pass", "token", "server", "command", "status", "mac"] {
+    for key in ["ssid", "pass", "token", "server", "topic", "mac"] {
         assert!(Config::parse(with(key, "")).is_none(), "{key} missing, and it parsed");
     }
 }
@@ -56,11 +57,9 @@ fn malformed_macs_are_rejected() {
 
 #[test]
 fn values_too_long_for_their_buffers_are_rejected() {
-    // Each case overflows one of the three buffers and fits the other two.
-    let server = format!("server=https://{}.example", "n".repeat(168)); // the subscribe URL 207 bytes, status 191
+    // The status URL is the subscribe URL less `-commands/json?since=2m`, so it fits whenever that one does.
+    let server = format!("server=https://{}.example", "n".repeat(168)); // the subscribe URL 210 bytes, status 187
     assert!(Config::parse(with("server", server.leak())).is_none(), "a subscribe URL past 192 bytes parsed");
-    let status = format!("status={}", "s".repeat(180)); // the status URL 201 bytes
-    assert!(Config::parse(with("status", status.leak())).is_none(), "a status URL past 192 bytes parsed");
     assert!(
         Config::parse(with("token", format!("token=tk_{}", "t".repeat(55)).leak())).is_none(),
         "an auth header past 64 bytes parsed"

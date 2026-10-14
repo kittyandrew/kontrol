@@ -62,8 +62,7 @@
     KONTROL_WIFI_PASS=emupassword
     KONTROL_TOKEN=tk_emutestemutestemutestemutest0
     KONTROL_SERVER=https://ntfy.test
-    KONTROL_COMMAND_TOPIC=commands
-    KONTROL_STATUS_TOPIC=status
+    KONTROL_TOPIC=pc
     KONTROL_MAC=52:54:00:aa:bb:cc
   '';
 in

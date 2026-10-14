@@ -27,16 +27,16 @@ the threat model.
   - The firmware setup. The option is often "PCIE Devices Power On", and ErP or Deep Sleep must be off.
   - The OS. On NixOS with NetworkManager, set
     `networking.networkmanager.settings.connection."ethernet.wake-on-lan" = 64;`.
-- An **ntfy server** with [access control](https://docs.ntfy.sh/config/#access-control), two topics and three
-  token users:
+- An **ntfy server** with [access control](https://docs.ntfy.sh/config/#access-control) and three token
+  users. Pick a topic name, here `pc`: commands go to `pc-commands`, and replies to `pc`.
 
   | User | Grants |
   |---|---|
-  | phone | write the command topic |
-  | Pico | read the command topic, write the status topic |
-  | listener | read the command topic, write the status topic |
+  | phone | write `pc-commands` |
+  | Pico | read `pc-commands`, write `pc` |
+  | listener | read `pc-commands`, write `pc` |
 
-  Your own ntfy login needs read access to the status topic to get the notifications.
+  Your own ntfy login needs read access to `pc` to get the notifications.
 
 ## NixOS
 
@@ -51,8 +51,7 @@ inputs.kontrol.inputs.nixpkgs.follows = "nixpkgs";
 services.kontrol = {
   enable = true;
   server = "https://ntfy.example.com";
-  commandTopic = "pc-commands";
-  statusTopic = "pc";
+  topic = "pc"; # commands arrive on pc-commands
   user = "alice"; # whose graphical session runs the listener and its commands
   tokenFile = "/run/secrets/kontrol"; # KONTROL_TOKEN=tk_... for the listener
   commands.lock = {
@@ -74,8 +73,7 @@ and a command the listener runs. The module writes the phone's import file to `/
    KONTROL_WIFI_PASS=...
    KONTROL_TOKEN=tk_...
    KONTROL_SERVER=https://ntfy.example.com
-   KONTROL_COMMAND_TOPIC=pc-commands
-   KONTROL_STATUS_TOPIC=pc
+   KONTROL_TOPIC=pc
    KONTROL_MAC=aa:bb:cc:dd:ee:ff
    ```
    `KONTROL_TOKEN` is the Pico's token. `KONTROL_MAC` is the MAC address of the PC's wired network card.
@@ -110,8 +108,8 @@ Do these checks once after a flash. They cover what the automated tests cannot: 
 the board's own flash and watchdog.
 
 1. Plug the Pico into its power. The LED goes off within a minute.
-2. With the PC on, tap Wake. Expect "Pico sent the wake packet" and "<host> is already up".
-3. Tap Suspend and wait until the PC sleeps. Tap Wake. Expect the PC to resume and report "<host> is up".
+2. With the PC on, tap Wake. Expect `Pico sent the wake packet` and `<host> is already up`.
+3. Tap Suspend and wait until the PC sleeps. Tap Wake. Expect the PC to resume and report `<host> is up`.
 4. Tap Shut down and wait until the PC is off. Tap Wake. Expect the PC to boot.
 5. Reboot the router. Expect the LED to come on, then go off within about three minutes. Wake still works.
 6. Unplug the Pico's power for ten seconds. Expect the LED to go off again within a minute.

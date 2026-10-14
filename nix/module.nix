@@ -1,5 +1,5 @@
-# NixOS module for the PC that kontrol controls: a listener that runs the commands posted to the command topic
-# and reports on the status topic, an announcement after every login and resume, and the phone's HTTP
+# NixOS module for the PC that kontrol controls: a listener that runs the commands posted to `<topic>-commands`
+# and reports on `<topic>`, an announcement after every login and resume, and the phone's HTTP
 # Shortcuts import file at /etc/kontrol/shortcuts.json. The ntfy users and grants are the server's to set up.
 {
   config,
@@ -10,7 +10,8 @@
   cfg = config.services.kontrol;
   host = config.networking.hostName;
   ntfy = lib.getExe' pkgs.ntfy-sh "ntfy";
-  statusUrl = "${cfg.server}/${cfg.statusTopic}";
+  commandTopic = "${cfg.topic}-commands"; # the firmware's Config::parse derives the same name
+  statusUrl = "${cfg.server}/${cfg.topic}";
 
   # ntfy runs this once per message, with the text in NTFY_MESSAGE, its unix time in NTFY_TIME and the
   # listener's NTFY_TOKEN inherited. The text is untrusted: it is only ever compared, never evaluated.
@@ -53,7 +54,7 @@
         ${ntfy} publish --quiet ${statusUrl} "${host} is up" && break
         sleep 5
       done &
-      exec ${ntfy} subscribe ${cfg.server}/${cfg.commandTopic} ${lib.getExe handle}
+      exec ${ntfy} subscribe ${cfg.server}/${commandTopic} ${lib.getExe handle}
     '';
   };
 in {
@@ -64,13 +65,10 @@ in {
       example = "https://ntfy.example.com";
       description = "ntfy base URL, without a trailing slash.";
     };
-    commandTopic = lib.mkOption {
+    topic = lib.mkOption {
       type = lib.types.str;
-      description = "Topic the phone posts commands to; the listener and the Pico read it.";
-    };
-    statusTopic = lib.mkOption {
-      type = lib.types.str;
-      description = "Topic the listener and the Pico report on; subscribe to it in the ntfy app.";
+      example = "pc";
+      description = "The ntfy topic the listener and the Pico report on, and the one to subscribe to in the ntfy app. Commands go to `<topic>-commands`.";
     };
     user = lib.mkOption {
       type = lib.types.str;
@@ -140,7 +138,10 @@ in {
       };
     };
 
-    environment.etc."kontrol/shortcuts.json".source = pkgs.callPackage ./shortcuts.nix {inherit (cfg) server commandTopic commands;};
+    environment.etc."kontrol/shortcuts.json".source = pkgs.callPackage ./shortcuts.nix {
+      inherit (cfg) server commands;
+      inherit commandTopic;
+    };
 
     # partOf: restarted with each new graphical session, so commands that talk to the compositor always reach
     # the running one.

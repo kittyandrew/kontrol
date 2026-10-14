@@ -384,7 +384,7 @@ fn run_one(name: &str) -> Result<(), String> {
     log::set_logger(&Recorder).unwrap();
     log::set_max_level(log::LevelFilter::Info);
     let text = format!(
-        "ssid=sim\npass=sim\ntoken={TOKEN}\nserver=http://10.0.0.1\ncommand=commands\nstatus=status\nmac={}\n",
+        "ssid=sim\npass=sim\ntoken={TOKEN}\nserver=http://10.0.0.1\ntopic=pc\nmac={}\n",
         PC_MAC.map(|b| format!("{b:02x}")).join(":")
     );
     let config: &'static app::Config = Box::leak(Box::new(app::Config::parse(text.leak()).expect("a valid config")));
@@ -419,14 +419,14 @@ fn dump_fake() {
         let ntfy = ntfy.clone();
         async move {
             let auth = format!("Authorization: Bearer {TOKEN}\r\n");
-            let anonymous = raw(client, "GET /commands/json?since=2m HTTP/1.1\r\nHost: ntfy\r\n\r\n".into(), 2).await;
+            let anonymous = raw(client, "GET /pc-commands/json?since=2m HTTP/1.1\r\nHost: ntfy\r\n\r\n".into(), 2).await;
             ntfy.borrow_mut().publish("old");
             Timer::after_secs(4).await; // "old" falls outside the stream's since=3s, "wake" inside it
             ntfy.borrow_mut().publish("wake");
             // 7 s: long enough for one 5 s keepalive.
-            let stream = raw(client, format!("GET /commands/json?since=3s HTTP/1.1\r\nHost: ntfy\r\n{auth}\r\n"), 7).await;
+            let stream = raw(client, format!("GET /pc-commands/json?since=3s HTTP/1.1\r\nHost: ntfy\r\n{auth}\r\n"), 7).await;
             let body = "Pico sent the wake packet";
-            let post = format!("POST /status HTTP/1.1\r\nHost: ntfy\r\n{auth}Content-Length: {}\r\n\r\n{body}", body.len());
+            let post = format!("POST /pc HTTP/1.1\r\nHost: ntfy\r\n{auth}Content-Length: {}\r\n\r\n{body}", body.len());
             let status = raw(client, post, 2).await;
             Ok::<_, String>([anonymous, stream, status])
         }

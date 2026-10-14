@@ -44,7 +44,8 @@ fn mark_progress() {
 }
 
 /// What kontrol-flash writes to the Pico's config sector, and the VM test to a file: one `key=value` line
-/// each for ssid, pass, token, server, command, status and mac.
+/// each for ssid, pass, token, server, topic and mac. Commands arrive on `<topic>-commands`; reports go to
+/// `<topic>`, the one people subscribe to.
 #[cfg_attr(not(target_os = "none"), expect(dead_code))] // the Linux build has no Wi-Fi: ssid and pass go unread
 pub struct Config {
     pub ssid: &'static str,
@@ -58,13 +59,13 @@ pub struct Config {
 impl Config {
     /// `None` for a missing or unknown key, a malformed MAC (`aa:bb:cc:dd:ee:ff`) or a value too long.
     pub fn parse(text: &'static str) -> Option<Self> {
-        let mut values = [None; 7];
+        let mut values = [None; 6];
         for line in text.lines() {
             let (key, value) = line.split_once('=')?;
-            let slot = ["ssid", "pass", "token", "server", "command", "status", "mac"].iter().position(|&k| k == key)?;
+            let slot = ["ssid", "pass", "token", "server", "topic", "mac"].iter().position(|&k| k == key)?;
             values[slot] = Some(value);
         }
-        let [Some(ssid), Some(pass), Some(token), Some(server), Some(command), Some(status), Some(mac)] = values else {
+        let [Some(ssid), Some(pass), Some(token), Some(server), Some(topic), Some(mac)] = values else {
             return None;
         };
         if ssid.len() > 32 || pass.len() > 64 {
@@ -88,8 +89,8 @@ impl Config {
         };
         // `since=2m`: on every (re)connect ntfy replays the last two minutes, so a tap during a reconnect
         // still arrives and nothing older ever fires. Replays repeat wakes already acted on: `last_wake`.
-        write!(config.subscribe_url, "{server}/{command}/json?since=2m").ok()?;
-        write!(config.status_url, "{server}/{status}").ok()?;
+        write!(config.subscribe_url, "{server}/{topic}-commands/json?since=2m").ok()?;
+        write!(config.status_url, "{server}/{topic}").ok()?;
         write!(config.auth, "Bearer {token}").ok()?;
         Some(config)
     }

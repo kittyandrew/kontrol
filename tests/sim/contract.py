@@ -39,7 +39,7 @@ def raw(request: bytes, secs: float) -> str:
 
 def publish(message: str):
     req = urllib.request.Request(
-        f"http://127.0.0.1:{PORT}/commands", data=message.encode(), headers={"Authorization": f"Bearer {PHONE}"}
+        f"http://127.0.0.1:{PORT}/pc-commands", data=message.encode(), headers={"Authorization": f"Bearer {PHONE}"}
     )
     urllib.request.urlopen(req).read()
 
@@ -53,7 +53,7 @@ def real_answers(workdir: str) -> list[str]:
         "auth-file": f"{workdir}/user.db",
         "auth-default-access": "deny-all",
         "auth-users": [f"pico:{HASH['pico']}:user", f"phone:{HASH['phone']}:user"],
-        "auth-access": ["pico:commands:ro", "pico:status:wo", "phone:commands:wo"],
+        "auth-access": ["pico:pc-commands:ro", "pico:pc:wo", "phone:pc-commands:wo"],
         "auth-tokens": [f"pico:{TOKEN}", f"phone:{PHONE}"],
     }
     try:
@@ -74,14 +74,14 @@ def real_answers(workdir: str) -> list[str]:
             except OSError:
                 time.sleep(0.05)
         auth = f"Authorization: Bearer {TOKEN}\r\n"
-        anonymous = raw(b"GET /commands/json?since=2m HTTP/1.1\r\nHost: ntfy\r\n\r\n", 2)
+        anonymous = raw(b"GET /pc-commands/json?since=2m HTTP/1.1\r\nHost: ntfy\r\n\r\n", 2)
         publish("old")
         time.sleep(4)  # "old" falls outside the stream's since=3s, "wake" inside it
         publish("wake")
         # 7 s: long enough for one 5 s keepalive.
-        stream = raw(f"GET /commands/json?since=3s HTTP/1.1\r\nHost: ntfy\r\n{auth}\r\n".encode(), 7)
+        stream = raw(f"GET /pc-commands/json?since=3s HTTP/1.1\r\nHost: ntfy\r\n{auth}\r\n".encode(), 7)
         body = "Pico sent the wake packet"
-        status = raw(f"POST /status HTTP/1.1\r\nHost: ntfy\r\n{auth}Content-Length: {len(body)}\r\n\r\n{body}".encode(), 2)
+        status = raw(f"POST /pc HTTP/1.1\r\nHost: ntfy\r\n{auth}Content-Length: {len(body)}\r\n\r\n{body}".encode(), 2)
         return [anonymous, stream, status]
     finally:
         server.terminate()
