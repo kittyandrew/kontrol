@@ -1,0 +1,38 @@
+[package]
+name = "kontrol-sim"
+version = "0.1.0"
+edition = "2024"
+publish = false
+autobins = false
+
+# The real app::run (firmware/src/app.rs, included by path) on a virtual clock, against a fake ntfy over an
+# in-memory Ethernet link. Each scenario runs in its own process: app.rs keeps its progress clock in a static.
+[[test]]
+name = "scenarios"
+path = "src/main.rs"
+harness = false
+
+[[test]]
+name = "parse"
+path = "src/parse.rs"
+
+[dependencies]
+# app.rs's own dependencies, as in ../Cargo.toml
+der = { version = "0.8.0-rc.2", features = ["heapless"] }
+embassy-net = { version = "0.9", features = ["dhcpv4", "dns", "medium-ethernet", "tcp", "udp"] }
+embassy-time = "0.5" # without "std": this crate is the time driver
+embedded-io-async = "0.7"
+heapless = "0.8"
+log = "0.4"
+portable-atomic = "1"
+reqwless = { version = "0.14", default-features = false, features = ["embedded-tls"] }
+serde = { version = "1", default-features = false, features = ["derive"] }
+serde-json-core = "0.6"
+static_cell = { package = "kontrol-sim-static-cell", path = "static_cell" }
+# the simulation
+critical-section = { version = "1", features = ["std"] }
+embassy-futures = "0.1"
+embassy-net-driver = "0.2"
+embassy-time-driver = "0.2"
+# A queue that takes any waker; the default integrated queue needs embassy-executor's.
+embassy-time-queue-utils = { version = "0.3", features = ["generic-queue-8"] }

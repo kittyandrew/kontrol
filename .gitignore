@@ -1,0 +1,5 @@
+/result
+/result-*
+/firmware/target/
+.claude/settings.local.json
+/tests/sim/target/
