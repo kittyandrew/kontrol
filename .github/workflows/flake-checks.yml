@@ -5,14 +5,19 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read # checking out is all any step needs; nothing writes back
+
 jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: cachix/install-nix-action@v31
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false # no later step uses git; else the token sits in .git/config
+      - uses: cachix/install-nix-action@448cde739abec1eaf0646249e3d25bb8d9bc7702 # v31.11.2
         with:
           enable_kvm: true # the VM test
-      - uses: DeterminateSystems/magic-nix-cache-action@v8
+      - uses: DeterminateSystems/magic-nix-cache-action@87b14cf437d03d37989d87f0fa5ce4f5dc1a330b # v8
       # Builds every check, independent ones in parallel, and evaluates the packages and the module.
       - run: nix flake check --print-build-logs
