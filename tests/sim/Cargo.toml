@@ -22,12 +22,12 @@ der = { version = "0.8.0-rc.2", features = ["heapless"] }
 embassy-net = { version = "0.9", features = ["dhcpv4", "dns", "medium-ethernet", "tcp", "udp"] }
 embassy-time = "0.5" # without "std": this crate is the time driver
 embedded-io-async = "0.7"
-heapless = "0.8"
+heapless = "0.9.4"
 log = "0.4"
 portable-atomic = "1"
 reqwless = { version = "0.14", default-features = false, features = ["embedded-tls"] }
 serde = { version = "1", default-features = false, features = ["derive"] }
-serde-json-core = "0.6"
+serde-json-core = "0.7"
 static_cell = { package = "kontrol-sim-static-cell", path = "static_cell" }
 # the simulation
 critical-section = { version = "1", features = ["std"] }

@@ -210,7 +210,7 @@ checksum = "a878c850e9e421b20262e9b41f9c860e4785fa07541c266b62ff9d1ef998a80a"
 dependencies = [
  "const-oid 0.10.2",
  "der_derive",
- "heapless 0.9.3",
+ "heapless 0.9.4",
  "time",
 ]
 
@@ -329,7 +329,7 @@ dependencies = [
  "embassy-time",
  "embedded-io-async",
  "embedded-nal-async",
- "heapless 0.9.3",
+ "heapless 0.9.4",
  "managed",
  "smoltcp",
 ]
@@ -351,7 +351,7 @@ dependencies = [
  "embedded-io-async",
  "futures-core",
  "futures-sink",
- "heapless 0.9.3",
+ "heapless 0.9.4",
 ]
 
 [[package]]
@@ -386,7 +386,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "168297bf80aaf114b3c9ad589bf38b01b3009b9af7f97cd18086c5bbf96f5693"
 dependencies = [
  "embassy-executor-timer-queue",
- "heapless 0.9.3",
+ "heapless 0.9.4",
 ]
 
 [[package]]
@@ -464,7 +464,7 @@ dependencies = [
  "embedded-io-async",
  "generic-array 0.14.7",
  "heapless 0.6.1",
- "heapless 0.9.3",
+ "heapless 0.9.4",
  "hkdf",
  "hmac",
  "p256",
@@ -586,22 +586,12 @@ dependencies = [
 
 [[package]]
 name = "heapless"
-version = "0.8.0"
+version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0bfb9eb618601c89945a70e254898da93b13be0388091d42117462b265bb3fad"
+checksum = "411fdef4df93751117bd9ef8caa0e7f99c65dafec5bd84313eb8e2fdd75e32f2"
 dependencies = [
  "hash32 0.3.1",
- "serde",
- "stable_deref_trait",
-]
-
-[[package]]
-name = "heapless"
-version = "0.9.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "25ba4bd83f9415b58b4ed8dc5714c76e626a105be4646c02630ad730ad3b5aa4"
-dependencies = [
- "hash32 0.3.1",
+ "serde_core",
  "stable_deref_trait",
 ]
 
@@ -657,7 +647,7 @@ dependencies = [
  "embassy-time-driver",
  "embassy-time-queue-utils",
  "embedded-io-async",
- "heapless 0.8.0",
+ "heapless 0.9.4",
  "kontrol-sim-static-cell",
  "log",
  "portable-atomic",
@@ -849,7 +839,7 @@ dependencies = [
  "embedded-io-async",
  "embedded-nal-async",
  "embedded-tls",
- "heapless 0.9.3",
+ "heapless 0.9.4",
  "hex",
  "httparse",
  "nourl",
@@ -915,11 +905,11 @@ dependencies = [
 
 [[package]]
 name = "serde-json-core"
-version = "0.6.0"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5b81787e655bd59cecadc91f7b6b8651330b2be6c33246039a65e5cd6f4e0828"
+checksum = "d51e6795fbc00a1b26d78c7a0dbda143215d9dd0ee27c8a63ae0e1ccd6b83706"
 dependencies = [
- "heapless 0.8.0",
+ "heapless 0.9.4",
  "ryu",
  "serde",
 ]
@@ -974,7 +964,7 @@ dependencies = [
  "bitflags",
  "byteorder",
  "cfg-if",
- "heapless 0.9.3",
+ "heapless 0.9.4",
  "managed",
 ]
 
